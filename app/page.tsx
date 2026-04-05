@@ -1,50 +1,175 @@
-import Image from 'next/image'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Sparkles, Cpu, Brain, Code2, Globe, BarChart3, Landmark, FileText, MessageSquare, Wrench, Server, CheckCircle2, FlaskConical, GraduationCap, Building2, Users, Search } from 'lucide-react'
+import Navbar from '@/components/Navbar'
 
-export default function Home() {
+const aiModels = [
+    { name: 'Gemini Flash (Google)', icon: Sparkles },
+    { name: 'Claude (Anthropic)', icon: Brain },
+    { name: 'GPT (OpenAI)', icon: Cpu },
+    { name: 'Open-source LLM (Llama, Mistral)', icon: Code2 },
+]
+
+const dataSources = [
+    { name: 'data.gov.mk', desc: 'Open government datasets', icon: Globe, active: true },
+    { name: 'MakStat', desc: 'Statistical office data', icon: BarChart3, active: true },
+    { name: 'Open Finance', desc: 'Coming soon', icon: Landmark, active: false },
+    { name: 'Sobranie Open Data', desc: 'Coming soon', icon: FileText, active: false },
+]
+
+const steps = [
+    { icon: MessageSquare, title: 'Ask a question', desc: 'In natural language' },
+    { icon: Wrench, title: 'AI selects tool', desc: 'Via MCP protocol' },
+    { icon: Server, title: 'Query public API', desc: 'Via MCP adapter' },
+    { icon: CheckCircle2, title: 'Get answer', desc: 'From official data' },
+]
+
+const users = [
+    { icon: FlaskConical, title: 'Data Scientists', desc: 'Analyze public datasets faster' },
+    { icon: GraduationCap, title: 'Researchers & Students', desc: 'Access structured data easily' },
+    { icon: Building2, title: 'Public Administration', desc: 'Data-driven decisions' },
+    { icon: Users, title: 'Citizens', desc: 'Understand public data' },
+]
+
+const exampleQueries = [
+    'Population by municipality for the last 10 years',
+    'Compare unemployment rate and average salary trends 2015–2024',
+    'Top 5 municipalities by population growth',
+    'Budget spending by category in 2023',
+]
+
+export default function HomePage() {
     return (
-        <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-            <main className="flex w-full max-w-3xl flex-1 flex-col items-center justify-between bg-white px-16 py-32 sm:items-start dark:bg-black">
-                <Image className="dark:invert" src="/next.svg" alt="Next.js logo" width={100} height={20} priority />
-                <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-                    <h1 className="max-w-xs text-3xl leading-10 font-semibold tracking-tight text-black dark:text-zinc-50">To get started, edit the page.tsx file.</h1>
-                    <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-                        Looking for a starting point or more instructions? Head over to{' '}
-                        <a
-                            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                            className="font-medium text-zinc-950 dark:text-zinc-50"
-                        >
-                            Templates
-                        </a>{' '}
-                        or the{' '}
-                        <a
-                            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                            className="font-medium text-zinc-950 dark:text-zinc-50"
-                        >
-                            Learning
-                        </a>{' '}
-                        center.
-                    </p>
+        <div className="bg-background min-h-screen">
+            <Navbar />
+
+            {/* Hero — periwinkle/lavender gradient background */}
+            <section className="py-28 text-center" style={{ background: 'var(--hero-gradient)' }}>
+                <div className="mx-auto max-w-2xl px-6">
+                    {/* Badge */}
+                    <div className="mb-5 inline-flex flex-col items-center gap-2">
+                        <div className="text-primary inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 text-sm font-medium shadow-sm backdrop-blur-sm">
+                            <Sparkles className="h-4 w-4" />
+                            Powered by MCP
+                        </div>
+                        <p className="text-muted-foreground text-sm">MCP (Model Context Protocol) allows AI models to securely access external tools and real-time public datasets.</p>
+                    </div>
+
+                    {/* Heading */}
+                    <h1 className="text-foreground text-5xl leading-[1.1] font-extrabold tracking-tight sm:text-6xl">Access Macedonian Public Data through AI</h1>
+                    <p className="text-muted-foreground mt-5 text-lg leading-relaxed">Query and retrieve structured datasets from data.gov.mk and MakStat using natural language through MCP.</p>
+
+                    {/* CTA Buttons */}
+                    <div className="mt-10 flex items-center justify-center gap-3">
+                        <Button asChild size="lg" className="rounded-full px-7 font-semibold shadow-md">
+                            <Link href="/demo">Try Demo</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="lg" className="rounded-full bg-white px-7 font-semibold shadow-sm">
+                            <a href="#data-sources">View Data Sources</a>
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-                    <a
-                        className="bg-foreground text-background flex h-12 w-full items-center justify-center gap-2 rounded-full px-5 transition-colors hover:bg-[#383838] md:w-[158px] dark:hover:bg-[#ccc]"
-                        href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <Image className="dark:invert" src="/vercel.svg" alt="Vercel logomark" width={16} height={16} />
-                        Deploy Now
-                    </a>
-                    <a
-                        className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-                        href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Documentation
-                    </a>
+            </section>
+
+            {/* Example Queries — white bg */}
+            <section className="bg-white py-16">
+                <div className="mx-auto max-w-3xl px-6">
+                    <h2 className="text-muted-foreground mb-8 text-center text-xs font-semibold tracking-widest uppercase">Example Queries</h2>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {exampleQueries.map((q) => (
+                            <Link
+                                key={q}
+                                href="/demo"
+                                className="border-border text-foreground hover:border-primary/30 flex items-start gap-3 rounded-xl border bg-white p-4 text-sm shadow-sm transition-all hover:shadow-md"
+                            >
+                                <Search className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                                <span>{q}</span>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
-            </main>
+            </section>
+
+            {/* Supported AI Models — slightly gray bg */}
+            <section className="bg-slate-50 py-16">
+                <div className="mx-auto max-w-3xl px-6">
+                    <h2 className="text-muted-foreground mb-8 text-center text-xs font-semibold tracking-widest uppercase">Supported AI Models</h2>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        {aiModels.map((m) => (
+                            <div key={m.name} className="border-border flex flex-col items-center gap-3 rounded-xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                                <m.icon className="text-primary h-8 w-8" />
+                                <span className="text-foreground text-center text-sm font-medium">{m.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Supported Data Sources — white bg */}
+            <section id="data-sources" className="bg-white py-16">
+                <div className="mx-auto max-w-3xl px-6">
+                    <h2 className="text-muted-foreground mb-2 text-center text-xs font-semibold tracking-widest uppercase">Supported Data Sources</h2>
+                    <p className="text-muted-foreground mb-8 text-center text-sm">Data is retrieved through official APIs when available.</p>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        {dataSources.map((s) => (
+                            <div
+                                key={s.name}
+                                className={`flex flex-col items-center gap-2 rounded-xl border bg-white p-6 text-center transition-shadow hover:shadow-md ${
+                                    s.active ? 'border-border' : 'border-muted-foreground/30 border-dashed opacity-60'
+                                }`}
+                            >
+                                <s.icon className={`h-8 w-8 ${s.active ? 'text-primary' : 'text-muted-foreground'}`} />
+                                <span className="text-foreground text-sm font-semibold">{s.name}</span>
+                                <span className="text-muted-foreground text-xs">{s.desc}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* How It Works — slightly gray bg */}
+            <section className="bg-slate-50 py-16">
+                <div className="mx-auto max-w-3xl px-6">
+                    <h2 className="text-muted-foreground mb-10 text-center text-xs font-semibold tracking-widest uppercase">How It Works</h2>
+                    <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+                        {steps.map((s, i) => (
+                            <div key={s.title} className="flex flex-col items-center gap-3 text-center">
+                                {/* Circular icon container — teal-ish bg */}
+                                <div className="bg-primary/10 text-primary flex h-14 w-14 items-center justify-center rounded-full">
+                                    <s.icon className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-primary text-xs font-bold">
+                                        {i + 1} {s.title}
+                                    </p>
+                                    <p className="text-muted-foreground text-xs">{s.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Built For — white bg */}
+            <section className="bg-white py-16">
+                <div className="mx-auto max-w-3xl px-6">
+                    <h2 className="text-muted-foreground mb-8 text-center text-xs font-semibold tracking-widest uppercase">Built For</h2>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        {users.map((u) => (
+                            <div key={u.title} className="border-border flex flex-col items-center gap-2 rounded-xl border bg-white p-6 text-center shadow-sm">
+                                <u.icon className="text-primary h-8 w-8" />
+                                <span className="text-foreground text-sm font-semibold">{u.title}</span>
+                                <span className="text-muted-foreground text-xs">{u.desc}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="border-border text-muted-foreground border-t bg-white py-8 text-center text-sm">
+                MCP Public Data Connector — Open-source project for accessing Macedonian public data through AI.
+            </footer>
         </div>
     )
 }
