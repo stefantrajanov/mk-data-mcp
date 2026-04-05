@@ -1,0 +1,40 @@
+name: Deploy to Vercel
+
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: read
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: latest
+
+            - name: Install Vercel CLI
+              run: bun install -g vercel@latest
+
+            - name: Override git author for deploy
+              env:
+                  EMAIL: ${{ secrets.EMAIL }}
+                  NAME: ${{ secrets.NAME }}
+              run: |
+                  git config user.email "$EMAIL"
+                  git config user.name "$NAME"
+                  git commit --amend --no-edit --reset-author
+
+            - name: Deploy to Vercel
+              env:
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+                  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+                  VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+              run: vercel --prod --token "$VERCEL_TOKEN" --yes
