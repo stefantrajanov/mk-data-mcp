@@ -1,8 +1,8 @@
 'use client'
 
+import { Database } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Database } from 'lucide-react'
 
 export default function Navbar() {
     const pathname = usePathname()
@@ -18,7 +18,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-4">
                     {!isDemo ? (
                         <Link
-                            href="/demo"
+                            href="/tool-playground"
                             className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center rounded-full px-5 text-sm font-semibold shadow-sm transition-colors"
                         >
                             Try Demo

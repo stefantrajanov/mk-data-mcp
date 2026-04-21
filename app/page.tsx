@@ -1,7 +1,7 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Sparkles, Cpu, Brain, Code2, Globe, BarChart3, Landmark, FileText, MessageSquare, Wrench, Server, CheckCircle2, FlaskConical, GraduationCap, Building2, Users, Search } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import { Button } from '@/components/ui/button'
+import { BarChart3, Brain, Building2, CheckCircle2, Code2, Cpu, FileText, FlaskConical, Globe, GraduationCap, Landmark, MessageSquare, Search, Server, Sparkles, Users, Wrench } from 'lucide-react'
+import Link from 'next/link'
 
 const aiModels = [
     { name: 'Gemini Flash (Google)', icon: Sparkles },
@@ -62,7 +62,7 @@ export default function HomePage() {
                     {/* CTA Buttons */}
                     <div className="mt-10 flex items-center justify-center gap-3">
                         <Button asChild size="lg" className="rounded-full px-7 font-semibold shadow-md">
-                            <Link href="/demo">Try Demo</Link>
+                            <Link href="/tool-playground">Try tool-playground</Link>
                         </Button>
                         <Button asChild variant="outline" size="lg" className="rounded-full bg-white px-7 font-semibold shadow-sm">
                             <a href="#data-sources">View Data Sources</a>
@@ -79,7 +79,7 @@ export default function HomePage() {
                         {exampleQueries.map((q) => (
                             <Link
                                 key={q}
-                                href="/demo"
+                                href="/tool-playground"
                                 className="border-border text-foreground hover:border-primary/30 flex items-start gap-3 rounded-xl border bg-white p-4 text-sm shadow-sm transition-all hover:shadow-md"
                             >
                                 <Search className="text-primary mt-0.5 h-4 w-4 shrink-0" />
