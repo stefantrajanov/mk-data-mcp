@@ -1,295 +1,423 @@
 'use client'
 
-import { useState } from 'react'
+import { executeTool } from '@/app/actions/executeTool'
+import Navbar from '@/components/Navbar'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Database, Send, FileText, Wrench, Table, Download, ChevronDown, Eye, Filter } from 'lucide-react'
-import Navbar from '@/components/Navbar'
+import { AlertCircle, BookOpen, Play, RefreshCw, Terminal } from 'lucide-react'
+import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
-const sampleResponse = `Based on data from MakStat, here is a comparison of unemployment rates and average net salaries in North Macedonia from 2015 to 2024. The unemployment rate has shown a steady decline from 26.1% in 2015 to approximately 13.1% in 2024. Meanwhile, the average net salary has increased from 22,342 MKD in 2015 to approximately 34,200 MKD in 2024. These trends indicate significant improvement in the labor market, with more people employed and higher average compensation.`
+// ---------------------------------------------------------------------------
+// TYPES & CONFIG
+// ---------------------------------------------------------------------------
 
-const sampleTable = [
-    { year: 2015, salary: '22,342', unemployment: '26.1%' },
-    { year: 2016, salary: '23,505', unemployment: '23.7%' },
-    { year: 2017, salary: '24,276', unemployment: '22.4%' },
-    { year: 2018, salary: '25,213', unemployment: '20.7%' },
-    { year: 2019, salary: '26,382', unemployment: '17.3%' },
-    { year: 2020, salary: '27,017', unemployment: '16.4%' },
-    { year: 2021, salary: '28,434', unemployment: '15.7%' },
-    { year: 2022, salary: '30,125', unemployment: '14.4%' },
-    { year: 2023, salary: '32,075', unemployment: '13.5%' },
-    { year: 2024, salary: '34,200', unemployment: '13.1%' },
+type FieldType = 'string' | 'number' | 'enum'
+
+interface ToolField {
+    name: string
+    type: FieldType
+    label: string
+    description?: string
+    placeholder?: string
+    options?: string[]
+    required?: boolean
+    default?: string | number
+}
+
+interface ToolConfig {
+    name: string
+    title: string
+    description: string
+    fields: ToolField[]
+}
+
+const currentYear = new Date().getFullYear()
+const currentMonth = new Date().getMonth() + 1
+
+const sharedDateFields: ToolField[] = [
+    { name: 'month_from', type: 'number', label: 'Month From', default: 1, description: 'Starting month (1-12)' },
+    { name: 'year_from', type: 'number', label: 'Year From', default: currentYear, description: 'Starting year (e.g. 2000)' },
+    { name: 'month_to', type: 'number', label: 'Month To', default: currentMonth, description: 'Ending month (1-12)' },
+    { name: 'year_to', type: 'number', label: 'Year To', default: currentYear, description: 'Ending year' },
 ]
 
-const sampleJson = JSON.stringify(
-    sampleTable.map((r) => ({
-        year: r.year,
-        avg_salary_mkd: r.salary,
-        unemployment_rate: r.unemployment,
-    })),
-    null,
-    2
-)
+const sharedPaginationFields: ToolField[] = [
+    { name: 'start', type: 'number', label: 'Start', default: 0, description: 'Pagination offset' },
+    { name: 'length', type: 'number', label: 'Length', default: 50, description: 'Records per page (1-500)' },
+]
 
-const mcpReasoning = 'Model selected makstat_population_by_municipality because the dataset contains demographic statistics by municipality.'
+const responseFormatField: ToolField = {
+    name: 'response_format',
+    type: 'enum',
+    label: 'Format',
+    default: 'markdown',
+    options: ['markdown', 'json'],
+    description: 'Format returned by the API',
+}
+
+const TOOLS_CONFIG: ToolConfig[] = [
+    {
+        name: 'multiply',
+        title: 'Multiply',
+        description: 'A simple test tool to multiply two numbers. Use this to verify the basic MCP connection.',
+        fields: [
+            { name: 'a', type: 'number', label: 'A', required: true, default: 0 },
+            { name: 'b', type: 'number', label: 'B', required: true, default: 0 },
+        ],
+    },
+    {
+        name: 'openfinance_search_transactions',
+        title: 'Search Transactions',
+        description:
+            'General-purpose tool to query Open Finance MK. Supports filtering by keyword, payer, recipient, EDBs, and date range. **Note: term MUST be in Macedonian Cyrillic.**\n\n⏱️ **PERFORMANCE WARNING**: Wide date ranges cause very slow API response times.',
+        fields: [
+            { name: 'term', type: 'string', label: 'Keyword (Cyrillic)', placeholder: 'Образование', description: 'General keyword (Macedonian Cyrillic only)' },
+            { name: 'payer', type: 'string', label: 'Payer Name', placeholder: 'Министерство...' },
+            { name: 'recipient', type: 'string', label: 'Recipient Name', placeholder: 'Работник...' },
+            { name: 'payerEDB', type: 'string', label: 'Payer EDB' },
+            { name: 'recipientEDB', type: 'string', label: 'Recipient EDB' },
+            ...sharedDateFields,
+            ...sharedPaginationFields,
+            responseFormatField,
+        ],
+    },
+    {
+        name: 'openfinance_get_transactions_by_payer',
+        title: 'Get by Payer',
+        description: 'Retrieve transactions strictly by a paying entity. Requires either `payer` or `payerEDB`.\n\n⏱️ **PERFORMANCE WARNING**: Wide date ranges cause very slow API responses.',
+        fields: [
+            { name: 'payer', type: 'string', label: 'Payer Name', placeholder: 'Општина Центар' },
+            { name: 'payerEDB', type: 'string', label: 'Payer EDB' },
+            ...sharedDateFields,
+            ...sharedPaginationFields,
+            responseFormatField,
+        ],
+    },
+    {
+        name: 'openfinance_get_transactions_by_recipient',
+        title: 'Get by Recipient',
+        description:
+            'Retrieve transactions strictly assigned to a receiving entity. Requires either `recipient` or `recipientEDB`.\n\n⏱️ **PERFORMANCE WARNING**: Wide date ranges cause very slow API responses.',
+        fields: [
+            { name: 'recipient', type: 'string', label: 'Recipient Name', placeholder: 'Градежни работи' },
+            { name: 'recipientEDB', type: 'string', label: 'Recipient EDB' },
+            ...sharedDateFields,
+            ...sharedPaginationFields,
+            responseFormatField,
+        ],
+    },
+    {
+        name: 'openfinance_get_transactions_by_keyword',
+        title: 'Get by Keyword',
+        description:
+            'Search by a thematic keyword. **CRITICAL: The keyword MUST be in Macedonian Cyrillic script.** (e.g. Образование)\n\n⏱️ **PERFORMANCE WARNING**: Wide date ranges cause very slow responses.',
+        fields: [{ name: 'keyword', type: 'string', label: 'Keyword (Cyrillic)', placeholder: 'Здравство', required: true }, ...sharedDateFields, ...sharedPaginationFields, responseFormatField],
+    },
+    {
+        name: 'openfinance_get_spending_summary',
+        title: 'Get Spending Summary',
+        description: 'Compute an aggregated spending summary client-side for up to 500 records limits.\n\n⏱️ **PERFORMANCE WARNING**: Wide date ranges cause very slow responses.',
+        fields: [
+            { name: 'term', type: 'string', label: 'Keyword (Cyrillic)', placeholder: 'Култура' },
+            { name: 'payer', type: 'string', label: 'Payer Name' },
+            { name: 'recipient', type: 'string', label: 'Recipient Name' },
+            ...sharedDateFields,
+            { name: 'length', type: 'number', label: 'Length', default: 500, description: 'Max records to fetch & sum (max 500)' },
+        ],
+    },
+]
+
+// ---------------------------------------------------------------------------
+// COMPONENT
+// ---------------------------------------------------------------------------
 
 export default function DemoPage() {
-    const [query, setQuery] = useState('')
-    const [model, setModel] = useState('gemini')
-    const [source, setSource] = useState('auto')
-    const [hasResult, setHasResult] = useState(false)
+    const [selectedToolId, setSelectedToolId] = useState<string>(TOOLS_CONFIG[0].name)
+    const [formValues, setFormValues] = useState<Record<string, string | number>>({})
     const [loading, setLoading] = useState(false)
-    const [showReasoning, setShowReasoning] = useState(false)
-    const [filtersOpen, setFiltersOpen] = useState(false)
-    const [yearFrom, setYearFrom] = useState('')
-    const [yearTo, setYearTo] = useState('')
-    const [municipality, setMunicipality] = useState('')
-    const [category, setCategory] = useState('')
+    const [result, setResult] = useState<{ content?: { text?: string }[] } | null>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [lastArgs, setLastArgs] = useState<Record<string, string | number> | null>(null)
 
-    const handleRun = () => {
-        setLoading(true)
-        setTimeout(() => {
-            setHasResult(true)
-            setLoading(false)
-        }, 1500)
+    const activeTool = TOOLS_CONFIG.find((t) => t.name === selectedToolId)!
+
+    // Populate defaults when tool changes
+    const handleToolSelect = (toolName: string) => {
+        setSelectedToolId(toolName)
+        const tool = TOOLS_CONFIG.find((t) => t.name === toolName)!
+        const initialVars: Record<string, string | number> = {}
+        tool.fields.forEach((f) => {
+            if (f.default !== undefined) {
+                initialVars[f.name] = f.default
+            }
+        })
+        setFormValues(initialVars)
+        setResult(null)
+        setError(null)
     }
 
-    const inputCls =
-        'mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
+    const handleChange = (name: string, value: string, type: FieldType) => {
+        setFormValues((prev) => {
+            const copy = { ...prev }
+            if (value === '') {
+                delete copy[name]
+            } else if (type === 'number') {
+                copy[name] = Number(value)
+            } else {
+                copy[name] = value
+            }
+            return copy
+        })
+    }
 
-    const selectCls =
-        'mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none'
+    const handleRun = async () => {
+        setLoading(true)
+        setError(null)
+        setResult(null)
+        setLastArgs(formValues)
+
+        const payloadStr = JSON.stringify(formValues)
+
+        try {
+            const res = await executeTool(activeTool.name, payloadStr)
+            if (!res.success) {
+                setError(res.error || 'Execution failed.')
+            } else {
+                setResult(res.result as { content?: { text?: string }[] } | null)
+            }
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : String(e))
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // Helper: Result Parsing
+    const getRenderedContent = () => {
+        if (!result || !result.content || result.content.length === 0) return 'No content.'
+        return result.content[0].text
+    }
 
     return (
-        <div className="flex min-h-screen flex-col bg-slate-50">
+        <div className="flex min-h-screen flex-col bg-[#F8FAFC]">
             <Navbar />
 
-            <div className="flex flex-1 flex-col lg:flex-row">
-                {/* Left Sidebar — white, narrow, fixed-ish */}
-                <aside className="border-border w-full shrink-0 border-b bg-white p-5 lg:w-56 lg:border-r lg:border-b-0 xl:w-64">
-                    <h2 className="text-foreground text-base font-semibold">Ask a question</h2>
-                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed">Query Macedonian public datasets using natural language.</p>
+            <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 lg:flex-row lg:p-8">
+                {/* 
+                  =======================================================
+                  LEFT COLUMN: CONFIGURATION
+                  ======================================================= 
+                */}
+                <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-[380px]">
+                    <div className="border-border flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm">
+                        <div className="border-border border-b bg-slate-50/50 p-4">
+                            <h2 className="flex items-center gap-2 text-sm font-semibold">
+                                <Terminal className="text-primary h-4 w-4" />
+                                Tool Configuration
+                            </h2>
+                            <p className="text-muted-foreground mt-1 text-xs">Select and configure an MCP tool to execute.</p>
+                        </div>
 
-                    <textarea
-                        className="border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 mt-4 w-full resize-none rounded-xl border bg-slate-50 p-3 text-sm focus:ring-2 focus:outline-none"
-                        rows={4}
-                        placeholder="Compare unemployment and average salary trends in the last 10 years."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                    />
-
-                    {/* AI Model */}
-                    <label className="text-foreground mt-4 block text-xs font-medium">AI Model</label>
-                    <div className="relative">
-                        <select className={selectCls} value={model} onChange={(e) => setModel(e.target.value)}>
-                            <option value="gemini">Gemini Flash</option>
-                            <option value="claude">Claude</option>
-                            <option value="gpt">GPT</option>
-                        </select>
-                        <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
-                    </div>
-
-                    {/* Data Source */}
-                    <label className="text-foreground mt-3 block text-xs font-medium">Data source (optional)</label>
-                    <div className="relative">
-                        <select className={selectCls} value={source} onChange={(e) => setSource(e.target.value)}>
-                            <option value="auto">Auto detect</option>
-                            <option value="makstat">MakStat</option>
-                            <option value="datagov">data.gov.mk</option>
-                        </select>
-                        <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
-                    </div>
-
-                    {/* Advanced Filters */}
-                    <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen} className="mt-3">
-                        <CollapsibleTrigger className="border-border bg-background text-foreground flex w-full items-center justify-between rounded-lg border px-3 py-2 text-xs font-medium transition-colors hover:bg-slate-50">
-                            <span className="flex items-center gap-1.5">
-                                <Filter className="text-muted-foreground h-3.5 w-3.5" />
-                                Advanced Filters
-                            </span>
-                            <ChevronDown className={`text-muted-foreground h-3.5 w-3.5 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="border-border bg-background mt-2 space-y-2 rounded-lg border p-3">
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="text-muted-foreground block text-xs font-medium">Year from</label>
-                                    <input type="number" placeholder="2015" className={inputCls} value={yearFrom} onChange={(e) => setYearFrom(e.target.value)} />
-                                </div>
-                                <div>
-                                    <label className="text-muted-foreground block text-xs font-medium">Year to</label>
-                                    <input type="number" placeholder="2024" className={inputCls} value={yearTo} onChange={(e) => setYearTo(e.target.value)} />
-                                </div>
-                            </div>
+                        <div className="flex max-h-[calc(100vh-200px)] flex-1 flex-col gap-4 overflow-y-auto p-4">
+                            {/* Tool Selection */}
                             <div>
-                                <label className="text-muted-foreground block text-xs font-medium">Municipality</label>
-                                <input type="text" placeholder="e.g. Skopje" className={inputCls} value={municipality} onChange={(e) => setMunicipality(e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="text-muted-foreground block text-xs font-medium">Dataset category</label>
-                                <select className={selectCls} value={category} onChange={(e) => setCategory(e.target.value)}>
-                                    <option value="">All categories</option>
-                                    <option value="demographics">Demographics</option>
-                                    <option value="economy">Economy</option>
-                                    <option value="education">Education</option>
-                                    <option value="health">Health</option>
+                                <label className="text-foreground mb-1.5 block text-xs font-semibold">Select Tool</label>
+                                <select
+                                    className="border-border bg-background focus:ring-primary/20 w-full appearance-none rounded-lg border px-3 py-2.5 font-mono text-sm transition-all focus:ring-2 focus:outline-none"
+                                    value={selectedToolId}
+                                    onChange={(e) => handleToolSelect(e.target.value)}
+                                >
+                                    {TOOLS_CONFIG.map((tool) => (
+                                        <option key={tool.name} value={tool.name}>
+                                            {tool.name}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
-                        </CollapsibleContent>
-                    </Collapsible>
 
-                    {/* Query button */}
-                    <Button className="mt-5 w-full rounded-lg font-semibold" onClick={handleRun} disabled={loading}>
-                        {loading ? (
-                            <span className="flex items-center gap-2">
-                                <span className="border-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-                                Processing…
-                            </span>
-                        ) : (
-                            <span className="flex items-center gap-2">
-                                <Send className="h-4 w-4" /> Query Data
-                            </span>
-                        )}
-                    </Button>
+                            <hr className="border-border my-1" />
+
+                            {/* Dynamic Fields */}
+                            <div className="flex flex-col gap-4">
+                                {activeTool.fields.map((field) => (
+                                    <div key={field.name}>
+                                        <label className="text-foreground mb-1.5 flex items-center justify-between text-xs font-semibold">
+                                            <span>
+                                                {field.label} {field.required && <span className="text-red-500">*</span>}
+                                            </span>
+                                            <span className="text-muted-foreground rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px]">{field.name}</span>
+                                        </label>
+
+                                        {field.type === 'enum' ? (
+                                            <select
+                                                className="border-border bg-background focus:ring-primary/20 w-full appearance-none rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+                                                value={formValues[field.name] || ''}
+                                                onChange={(e) => handleChange(field.name, e.target.value, field.type)}
+                                            >
+                                                <option value="" disabled>
+                                                    Select {field.label}...
+                                                </option>
+                                                {field.options?.map((opt) => (
+                                                    <option key={opt} value={opt}>
+                                                        {opt}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type={field.type === 'number' ? 'number' : 'text'}
+                                                placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}...`}
+                                                className="border-border bg-background placeholder:text-muted-foreground focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm transition-all focus:ring-2 focus:outline-none"
+                                                value={formValues[field.name] ?? ''}
+                                                onChange={(e) => handleChange(field.name, e.target.value, field.type)}
+                                            />
+                                        )}
+                                        {field.description && <p className="text-muted-foreground mt-1.5 text-[11px] leading-snug">{field.description}</p>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="border-border border-t bg-slate-50/50 p-4">
+                            <Button
+                                onClick={handleRun}
+                                disabled={loading}
+                                className="bg-primary text-primary-foreground hover:bg-primary/95 h-10 w-full rounded-xl font-semibold shadow-sm transition-all"
+                            >
+                                {loading ? (
+                                    <span className="flex items-center gap-2">
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                        Executing Tool...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-2">
+                                        <Play className="h-4 w-4 fill-current" />
+                                        Run Tool
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
                 </aside>
 
-                {/* Right Content Panel — slate-50 bg */}
-                <main className="flex-1 overflow-auto p-6">
-                    {!hasResult && !loading ? (
-                        <div className="text-muted-foreground flex h-full min-h-[400px] items-center justify-center">
-                            <div className="text-center">
-                                <Database className="mx-auto h-12 w-12 opacity-25" />
-                                <p className="mt-3 text-sm">Run a query to see results here.</p>
+                {/* 
+                  =======================================================
+                  RIGHT COLUMN: DOCUMENTATION & RESULTS
+                  ======================================================= 
+                */}
+                <main className="flex w-full min-w-0 flex-1 flex-col gap-6">
+                    {/* Tool Documentation Header */}
+                    <div className="border-border rounded-2xl border bg-white p-6 shadow-sm">
+                        <div className="mb-3 flex items-center gap-3">
+                            <div className="bg-primary/10 rounded-lg p-2">
+                                <BookOpen className="text-primary h-5 w-5" />
                             </div>
+                            <h1 className="text-foreground text-xl font-bold">{activeTool.title}</h1>
                         </div>
-                    ) : loading ? (
-                        <div className="flex h-full min-h-[400px] items-center justify-center">
-                            <div className="text-center">
-                                <span className="border-primary mx-auto block h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
-                                <p className="text-muted-foreground mt-3 text-sm">Querying public data…</p>
+                        <div className="prose prose-sm text-muted-foreground prose-strong:text-foreground prose-strong:font-semibold mt-4 max-w-none">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeTool.description}</ReactMarkdown>
+                        </div>
+                    </div>
+
+                    {/* Results Body */}
+                    <div className="border-border flex min-h-[400px] flex-1 flex-col rounded-2xl border bg-white shadow-sm">
+                        {!result && !error && !loading ? (
+                            <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center p-8 text-center">
+                                <div className="ring-border mb-4 rounded-full bg-slate-50 p-4 ring-1">
+                                    <Play className="text-muted-foreground h-8 w-8 opacity-50" />
+                                </div>
+                                <h3 className="text-foreground font-semibold">Awaiting Execution</h3>
+                                <p className="mt-1 max-w-sm text-sm">Fill in the arguments on the left and run the tool to see the execution results here.</p>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <h2 className="text-foreground text-lg font-semibold">Generated Answer</h2>
+                        ) : loading ? (
+                            <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center p-8 text-center">
+                                <RefreshCw className="text-primary mb-4 h-8 w-8 animate-spin" />
+                                <h3 className="text-foreground text-sm font-semibold">Processing Request...</h3>
+                                <p className="mt-1 text-xs">This may take a moment depending on the date range.</p>
+                            </div>
+                        ) : (
+                            <Tabs defaultValue={error ? 'raw' : 'rendered'} className="relative flex w-full flex-1 flex-col">
+                                <div className="border-border rounded-t-2xl border-b bg-slate-50/50 p-2">
+                                    <TabsList className="bg-background/50 border-border/50 border">
+                                        <TabsTrigger value="rendered" disabled={!!error} className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                            Rendered Output
+                                        </TabsTrigger>
+                                        <TabsTrigger value="raw" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                            Raw Response
+                                        </TabsTrigger>
+                                        <TabsTrigger value="args" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                            Payload Sent
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </div>
 
-                            {/* Answer Tabs */}
-                            <Tabs defaultValue="answer">
-                                <TabsList className="bg-muted/60">
-                                    <TabsTrigger value="answer">Answer</TabsTrigger>
-                                    <TabsTrigger value="table">Table</TabsTrigger>
-                                    <TabsTrigger value="json">JSON</TabsTrigger>
-                                </TabsList>
+                                <div className="relative flex-1 overflow-x-auto p-4">
+                                    {error ? (
+                                        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900">
+                                            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                                            <div className="flex w-full min-w-0 flex-col gap-1">
+                                                <span className="text-sm font-semibold">Execution Failed</span>
+                                                <code className="mt-1 block overflow-x-auto rounded bg-red-100/50 px-2 py-1 text-xs whitespace-pre-wrap">{error}</code>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <TabsContent value="rendered" className="mt-0 h-full text-sm outline-none data-[state=inactive]:hidden">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    table: ({ node, ...props }) => (
+                                                        <div className="border-border scrollbar-thin scrollbar-thumb-slate-300 my-6 w-full overflow-x-auto rounded-lg border bg-white shadow-sm">
+                                                            <table className="w-full min-w-max border-collapse text-left text-sm whitespace-nowrap" {...props} />
+                                                        </div>
+                                                    ),
+                                                    thead: ({ node, ...props }) => <thead className="border-border border-b bg-slate-50" {...props} />,
+                                                    th: ({ node, ...props }) => <th className="text-muted-foreground p-3 font-semibold" {...props} />,
+                                                    td: ({ node, ...props }) => <td className="border-border/50 text-foreground border-b p-3" {...props} />,
+                                                    p: ({ node, ...props }) => <p className="text-foreground mb-4 leading-relaxed" {...props} />,
+                                                    blockquote: ({ node, ...props }) => (
+                                                        <blockquote className="my-4 rounded-r-lg border-l-4 border-blue-500/50 bg-blue-50/50 p-3 text-xs text-blue-800 italic" {...props} />
+                                                    ),
+                                                    strong: ({ node, ...props }) => <strong className="text-foreground font-semibold" {...props} />,
+                                                    h1: ({ node, ...props }) => <h1 className="mt-6 mb-4 text-xl font-bold" {...props} />,
+                                                    h2: ({ node, ...props }) => <h2 className="mt-5 mb-3 text-lg font-bold" {...props} />,
+                                                    ul: ({ node, ...props }) => <ul className="mb-4 list-inside list-disc space-y-1" {...props} />,
+                                                    li: ({ node, ...props }) => <li className="text-foreground" {...props} />,
+                                                    code: ({ node, className, children, ...props }) => {
+                                                        const match = /language-(\w+)/.exec(className || '')
+                                                        return !match ? (
+                                                            <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-pink-600" {...props}>
+                                                                {children}
+                                                            </code>
+                                                        ) : (
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
+                                                        )
+                                                    },
+                                                }}
+                                            >
+                                                {getRenderedContent()}
+                                            </ReactMarkdown>
+                                        </TabsContent>
+                                    )}
 
-                                <TabsContent value="answer" className="mt-3">
-                                    <div className="border-border text-foreground rounded-xl border bg-white p-5 text-sm leading-relaxed shadow-sm">{sampleResponse}</div>
-                                </TabsContent>
+                                    <TabsContent value="raw" className="mt-0 h-full outline-none data-[state=inactive]:hidden">
+                                        <div className="w-full overflow-x-auto rounded-xl border border-[#30363D] bg-[#0D1117] p-4 font-mono text-xs text-[#C9D1D9]">
+                                            <pre>{JSON.stringify(result, null, 2)}</pre>
+                                        </div>
+                                    </TabsContent>
 
-                                <TabsContent value="table" className="mt-3">
-                                    <div className="border-border overflow-x-auto rounded-xl border bg-white shadow-sm">
-                                        <table className="w-full text-sm">
-                                            <thead>
-                                                <tr className="border-border border-b bg-slate-50">
-                                                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Year</th>
-                                                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Avg. Salary (MKD)</th>
-                                                    <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium tracking-wider uppercase">Unemployment</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-border divide-y">
-                                                {sampleTable.map((row) => (
-                                                    <tr key={row.year} className="transition-colors hover:bg-slate-50">
-                                                        <td className="text-foreground px-4 py-3 text-sm">{row.year}</td>
-                                                        <td className="text-foreground px-4 py-3 text-sm">{row.salary}</td>
-                                                        <td className="text-foreground px-4 py-3 text-sm">{row.unemployment}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </TabsContent>
-
-                                <TabsContent value="json" className="mt-3">
-                                    <div className="border-border rounded-xl border bg-white p-4 shadow-sm">
-                                        <pre className="text-foreground overflow-x-auto font-mono text-xs whitespace-pre">{sampleJson}</pre>
-                                    </div>
-                                </TabsContent>
+                                    <TabsContent value="args" className="mt-0 h-full outline-none data-[state=inactive]:hidden">
+                                        <div className="overflow-x-auto rounded-xl border border-[#30363D] bg-[#0D1117] p-4 font-mono text-xs text-[#C9D1D9]">
+                                            <pre>{JSON.stringify({ tool: activeTool.name, args: lastArgs }, null, 2)}</pre>
+                                        </div>
+                                    </TabsContent>
+                                </div>
                             </Tabs>
-
-                            {/* Download buttons */}
-                            <div className="flex gap-2">
-                                <Button variant="outline" size="sm" className="gap-1.5 rounded-lg bg-white">
-                                    <Download className="h-3.5 w-3.5" /> Download CSV
-                                </Button>
-                                <Button variant="outline" size="sm" className="gap-1.5 rounded-lg bg-white">
-                                    <Download className="h-3.5 w-3.5" /> Download JSON
-                                </Button>
-                            </div>
-
-                            {/* MCP Tool Transparency */}
-                            <div className="border-border rounded-xl border bg-white p-4 shadow-sm">
-                                <div className="grid gap-4 sm:grid-cols-3">
-                                    <div className="flex items-start gap-2.5">
-                                        <Wrench className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                                        <div>
-                                            <div className="text-muted-foreground text-xs">Tool used</div>
-                                            <div className="text-foreground mt-0.5 font-mono text-xs font-medium break-all">makstat_population_by_municipality</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-2.5">
-                                        <FileText className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                                        <div>
-                                            <div className="text-muted-foreground text-xs">Source</div>
-                                            <div className="text-foreground mt-0.5 text-sm font-medium">MakStat API</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-2.5">
-                                        <Table className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                                        <div>
-                                            <div className="text-muted-foreground text-xs">Format</div>
-                                            <div className="text-foreground mt-0.5 text-sm font-medium">Normalized JSON</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={() => setShowReasoning(!showReasoning)}
-                                    className="text-primary hover:text-primary/80 mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors"
-                                >
-                                    <Eye className="h-3.5 w-3.5" />
-                                    {showReasoning ? 'Hide MCP reasoning' : 'Show MCP reasoning'}
-                                </button>
-                                {showReasoning && <div className="text-muted-foreground mt-2 rounded-lg bg-slate-50 p-3 text-xs italic">{mcpReasoning}</div>}
-                            </div>
-
-                            {/* Structured Data Preview */}
-                            <div className="border-border overflow-hidden rounded-xl border bg-white shadow-sm">
-                                <div className="border-border flex items-center gap-2 border-b bg-slate-50 px-4 py-3">
-                                    <Table className="text-muted-foreground h-4 w-4" />
-                                    <span className="text-foreground text-sm font-medium">Structured Data Preview</span>
-                                </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-border border-b">
-                                                <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium">Year</th>
-                                                <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium">Avg. Salary (MKD)</th>
-                                                <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium">Unemployment</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-border divide-y">
-                                            {sampleTable.map((row) => (
-                                                <tr key={row.year} className="transition-colors hover:bg-slate-50">
-                                                    <td className="text-foreground px-4 py-3">{row.year}</td>
-                                                    <td className="text-foreground px-4 py-3">{row.salary}</td>
-                                                    <td className="text-foreground px-4 py-3">{row.unemployment}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </main>
             </div>
         </div>
