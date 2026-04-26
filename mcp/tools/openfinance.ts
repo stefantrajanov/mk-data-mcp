@@ -4,7 +4,7 @@ import { z } from 'zod'
 // Constants
 // ---------------------------------------------------------------------------
 
-const API_BASE_URL = 'https://open.finance.gov.mk/api/datatable/search/transactions'
+const API_BASE_URL = process.env.OPEN_FINANCE_API_BASE_URL || ''
 const CHARACTER_LIMIT = 25_000
 
 // ---------------------------------------------------------------------------
