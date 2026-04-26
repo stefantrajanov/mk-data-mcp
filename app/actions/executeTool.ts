@@ -1,22 +1,26 @@
 'use server'
 
-import { multiplyTool } from '@/mcp/tools/multiply'
 import { openfinanceSearchTransactionsTool, openfinanceGetByPayerTool, openfinanceGetByRecipientTool, openfinanceGetByKeywordTool, openfinanceGetSpendingSummaryTool } from '@/mcp/tools/openfinance'
+import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDatastoreTool, datagovmkListOrganizationsTool } from '@/mcp/tools/data-gov'
 
 export async function executeTool(toolName: string, argsStr: string) {
     try {
         let args: unknown = {}
         if (argsStr) {
             args = JSON.parse(argsStr)
+
+            // Fixup for playground enums that should be booleans
+            if (toolName === datagovmkListOrganizationsTool.name && typeof args === 'object' && args !== null) {
+                const a = args as Record<string, unknown>
+                if (a.all_fields === 'true') a.all_fields = true
+                if (a.all_fields === 'false') a.all_fields = false
+                if (a.include_dataset_count === 'true') a.include_dataset_count = true
+                if (a.include_dataset_count === 'false') a.include_dataset_count = false
+            }
         }
 
         let result
         switch (toolName) {
-            case multiplyTool.name: {
-                const validArgs = multiplyTool.meta.inputSchema.parse(args)
-                result = await multiplyTool.handler(validArgs)
-                break
-            }
             case openfinanceSearchTransactionsTool.name: {
                 const validArgs = openfinanceSearchTransactionsTool.meta.inputSchema.parse(args)
                 result = await openfinanceSearchTransactionsTool.handler(validArgs)
@@ -40,6 +44,26 @@ export async function executeTool(toolName: string, argsStr: string) {
             case openfinanceGetSpendingSummaryTool.name: {
                 const validArgs = openfinanceGetSpendingSummaryTool.meta.inputSchema.parse(args)
                 result = await openfinanceGetSpendingSummaryTool.handler(validArgs)
+                break
+            }
+            case datagovmkSearchDatasetsTool.name: {
+                const validArgs = datagovmkSearchDatasetsTool.meta.inputSchema.parse(args)
+                result = await datagovmkSearchDatasetsTool.handler(validArgs)
+                break
+            }
+            case datagovmkGetDatasetTool.name: {
+                const validArgs = datagovmkGetDatasetTool.meta.inputSchema.parse(args)
+                result = await datagovmkGetDatasetTool.handler(validArgs)
+                break
+            }
+            case datagovmkQueryDatastoreTool.name: {
+                const validArgs = datagovmkQueryDatastoreTool.meta.inputSchema.parse(args)
+                result = await datagovmkQueryDatastoreTool.handler(validArgs)
+                break
+            }
+            case datagovmkListOrganizationsTool.name: {
+                const validArgs = datagovmkListOrganizationsTool.meta.inputSchema.parse(args)
+                result = await datagovmkListOrganizationsTool.handler(validArgs)
                 break
             }
             default:
