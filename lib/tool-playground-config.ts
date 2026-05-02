@@ -123,4 +123,61 @@ export const TOOLS_CONFIG: ToolConfig[] = [
             { name: 'include_dataset_count', type: 'enum', label: 'Include Dataset Count', default: 'false', options: ['true', 'false'] },
         ],
     },
+    {
+        name: 'makstat_browse',
+        title: 'MakStat: Browse Categories',
+        description:
+            'Navigate the MakStat category hierarchy. Leave path empty to list root categories, then drill down using the `id` fields returned.\n\n⚠️ Even on the English endpoint, `id` values are in Macedonian — always use them verbatim in subsequent calls.',
+        fields: [
+            {
+                name: 'path',
+                type: 'string',
+                label: 'Path',
+                default: '',
+                placeholder: 'e.g. Пазар на труд (leave empty for root)',
+                description: 'Macedonian path from a previous browse result',
+            },
+            { name: 'lang', type: 'enum', label: 'Language', default: 'en', options: ['en', 'mk'] },
+        ],
+    },
+    {
+        name: 'makstat_get_metadata',
+        title: 'MakStat: Get Table Metadata',
+        description: 'Get variables and available values for a .px table. Required before querying — provides the Macedonian Cyrillic variable codes needed by makstat_query.',
+        fields: [
+            {
+                name: 'path',
+                type: 'string',
+                label: 'Table Path',
+                required: true,
+                placeholder: 'e.g. Пазар на труд/Плати/НаемниВработени',
+                description: 'Full path from makstat_browse (no .px extension)',
+            },
+            { name: 'lang', type: 'enum', label: 'Language', default: 'en', options: ['en', 'mk'] },
+        ],
+    },
+    {
+        name: 'makstat_query',
+        title: 'MakStat: Query Data',
+        description:
+            'Fetch statistical data with variable selections. Call makstat_get_metadata first to get the Cyrillic variable codes.\n\nUse `filter: "top"` with `values: ["5"]` to get the latest 5 periods without hardcoding years.',
+        fields: [
+            {
+                name: 'path',
+                type: 'string',
+                label: 'Table Path',
+                required: true,
+                placeholder: 'e.g. Пазар на труд/Плати/НаемниВработени',
+            },
+            {
+                name: 'selections',
+                type: 'string',
+                label: 'Selections (JSON array)',
+                required: true,
+                placeholder: '[{"code":"Година","filter":"top","values":["5"]},{"code":"Мерка","filter":"all","values":["*"]}]',
+                description: 'JSON array of variable selections. Get codes from makstat_get_metadata.',
+            },
+            { name: 'lang', type: 'enum', label: 'Language', default: 'en', options: ['en', 'mk'] },
+        ],
+    },
 ]

@@ -2,6 +2,7 @@
 
 import { openfinanceSearchTransactionsTool, openfinanceGetByPayerTool, openfinanceGetByRecipientTool, openfinanceGetByKeywordTool, openfinanceGetSpendingSummaryTool } from '@/mcp/tools/openfinance'
 import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDatastoreTool, datagovmkListOrganizationsTool } from '@/mcp/tools/data-gov'
+import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
 
 export async function executeTool(toolName: string, argsStr: string) {
     try {
@@ -16,6 +17,14 @@ export async function executeTool(toolName: string, argsStr: string) {
                 if (a.all_fields === 'false') a.all_fields = false
                 if (a.include_dataset_count === 'true') a.include_dataset_count = true
                 if (a.include_dataset_count === 'false') a.include_dataset_count = false
+            }
+
+            // Fixup for playground: selections is submitted as a JSON string, parse it into an array
+            if (toolName === makstatQueryTool.name && typeof args === 'object' && args !== null) {
+                const a = args as Record<string, unknown>
+                if (typeof a.selections === 'string') {
+                    a.selections = JSON.parse(a.selections)
+                }
             }
         }
 
@@ -64,6 +73,21 @@ export async function executeTool(toolName: string, argsStr: string) {
             case datagovmkListOrganizationsTool.name: {
                 const validArgs = datagovmkListOrganizationsTool.meta.inputSchema.parse(args)
                 result = await datagovmkListOrganizationsTool.handler(validArgs)
+                break
+            }
+            case makstatBrowseTool.name: {
+                const validArgs = makstatBrowseTool.meta.inputSchema.parse(args)
+                result = await makstatBrowseTool.handler(validArgs)
+                break
+            }
+            case makstatGetMetadataTool.name: {
+                const validArgs = makstatGetMetadataTool.meta.inputSchema.parse(args)
+                result = await makstatGetMetadataTool.handler(validArgs)
+                break
+            }
+            case makstatQueryTool.name: {
+                const validArgs = makstatQueryTool.meta.inputSchema.parse(args)
+                result = await makstatQueryTool.handler(validArgs)
                 break
             }
             default:
