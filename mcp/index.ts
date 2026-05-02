@@ -2,6 +2,7 @@ import { openfinanceSearchTransactionsTool, openfinanceGetByPayerTool, openfinan
 import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDatastoreTool, datagovmkListOrganizationsTool } from '@/mcp/tools/data-gov'
 import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
 import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
+import { uslugiBrowseTool, uslugiSearchServicesTool, uslugiGetServiceTool, uslugiListInstitutionsTool } from '@/mcp/tools/uslugi'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
 export function configureMcpServer(server: McpServer) {
@@ -29,4 +30,10 @@ export function configureMcpServer(server: McpServer) {
     server.registerTool(budgetGetExpenditureBreakdownTool.name, budgetGetExpenditureBreakdownTool.meta, budgetGetExpenditureBreakdownTool.handler)
     server.registerTool(budgetGetInstitutionsTool.name, budgetGetInstitutionsTool.meta, budgetGetInstitutionsTool.handler)
     server.registerTool(budgetGetMacroTrendsTool.name, budgetGetMacroTrendsTool.meta, budgetGetMacroTrendsTool.handler)
+
+    // uslugi.gov.mk tools
+    server.registerTool(uslugiBrowseTool.name, uslugiBrowseTool.meta, uslugiBrowseTool.handler)
+    server.registerTool(uslugiSearchServicesTool.name, uslugiSearchServicesTool.meta, uslugiSearchServicesTool.handler)
+    server.registerTool(uslugiGetServiceTool.name, uslugiGetServiceTool.meta, uslugiGetServiceTool.handler)
+    server.registerTool(uslugiListInstitutionsTool.name, uslugiListInstitutionsTool.meta, uslugiListInstitutionsTool.handler)
 }

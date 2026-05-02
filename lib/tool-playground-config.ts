@@ -190,6 +190,30 @@ export const TOOLS_CONFIG: ToolConfig[] = [
         fields: [],
     },
     {
+        name: 'uslugi_browse',
+        title: 'uslugi.gov.mk: Browse Categories',
+        description: 'Browse all service categories and subcategories on the Macedonian government e-services portal. Good first call to discover keywords before searching.',
+        fields: [],
+    },
+    {
+        name: 'uslugi_search_services',
+        title: 'uslugi.gov.mk: Search Services',
+        description: 'Search for government services by keyword in Macedonian Cyrillic. Returns matching service names and IDs.',
+        fields: [{ name: 'term', type: 'string', label: 'Keyword (Cyrillic)', required: true, placeholder: 'e.g. возачка, пасош, данок' }],
+    },
+    {
+        name: 'uslugi_get_service',
+        title: 'uslugi.gov.mk: Get Service Details',
+        description: 'Get full details for a service by ID — fees (MKD), deadlines, legal basis, institution contact info.',
+        fields: [{ name: 'id', type: 'number', label: 'Service ID', required: true, description: 'ID from uslugi_search_services results' }],
+    },
+    {
+        name: 'uslugi_list_institutions',
+        title: 'uslugi.gov.mk: List Institutions',
+        description: 'List major government institutions with name, address, phone, email, and coordinates.',
+        fields: [],
+    },
+    {
         name: 'makstat_query',
         title: 'MakStat: Query Data',
         description:
