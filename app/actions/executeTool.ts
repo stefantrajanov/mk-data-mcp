@@ -4,6 +4,7 @@ import { openfinanceSearchTransactionsTool, openfinanceGetByPayerTool, openfinan
 import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDatastoreTool, datagovmkListOrganizationsTool } from '@/mcp/tools/data-gov'
 import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
 import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
+import { uslugiBrowseTool, uslugiSearchServicesTool, uslugiGetServiceTool, uslugiListInstitutionsTool } from '@/mcp/tools/uslugi'
 
 export async function executeTool(toolName: string, argsStr: string) {
     try {
@@ -114,6 +115,26 @@ export async function executeTool(toolName: string, argsStr: string) {
             case budgetGetMacroTrendsTool.name: {
                 const validArgs = budgetGetMacroTrendsTool.meta.inputSchema.parse(args)
                 result = await budgetGetMacroTrendsTool.handler(validArgs)
+                break
+            }
+            case uslugiBrowseTool.name: {
+                const validArgs = uslugiBrowseTool.meta.inputSchema.parse(args)
+                result = await uslugiBrowseTool.handler(validArgs)
+                break
+            }
+            case uslugiSearchServicesTool.name: {
+                const validArgs = uslugiSearchServicesTool.meta.inputSchema.parse(args)
+                result = await uslugiSearchServicesTool.handler(validArgs)
+                break
+            }
+            case uslugiGetServiceTool.name: {
+                const validArgs = uslugiGetServiceTool.meta.inputSchema.parse(args)
+                result = await uslugiGetServiceTool.handler(validArgs)
+                break
+            }
+            case uslugiListInstitutionsTool.name: {
+                const validArgs = uslugiListInstitutionsTool.meta.inputSchema.parse(args)
+                result = await uslugiListInstitutionsTool.handler(validArgs)
                 break
             }
             default:
