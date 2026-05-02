@@ -1,6 +1,7 @@
 import { openfinanceSearchTransactionsTool, openfinanceGetByPayerTool, openfinanceGetByRecipientTool, openfinanceGetByKeywordTool, openfinanceGetSpendingSummaryTool } from '@/mcp/tools/openfinance'
 import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDatastoreTool, datagovmkListOrganizationsTool } from '@/mcp/tools/data-gov'
 import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
+import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
 export function configureMcpServer(server: McpServer) {
@@ -21,4 +22,11 @@ export function configureMcpServer(server: McpServer) {
     server.registerTool(makstatBrowseTool.name, makstatBrowseTool.meta, makstatBrowseTool.handler)
     server.registerTool(makstatGetMetadataTool.name, makstatGetMetadataTool.meta, makstatGetMetadataTool.handler)
     server.registerTool(makstatQueryTool.name, makstatQueryTool.meta, makstatQueryTool.handler)
+
+    // Budget Finance MK tools
+    server.registerTool(budgetGetSummaryTool.name, budgetGetSummaryTool.meta, budgetGetSummaryTool.handler)
+    server.registerTool(budgetGetIncomeBreakdownTool.name, budgetGetIncomeBreakdownTool.meta, budgetGetIncomeBreakdownTool.handler)
+    server.registerTool(budgetGetExpenditureBreakdownTool.name, budgetGetExpenditureBreakdownTool.meta, budgetGetExpenditureBreakdownTool.handler)
+    server.registerTool(budgetGetInstitutionsTool.name, budgetGetInstitutionsTool.meta, budgetGetInstitutionsTool.handler)
+    server.registerTool(budgetGetMacroTrendsTool.name, budgetGetMacroTrendsTool.meta, budgetGetMacroTrendsTool.handler)
 }

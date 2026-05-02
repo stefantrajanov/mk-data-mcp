@@ -3,6 +3,7 @@
 import { openfinanceSearchTransactionsTool, openfinanceGetByPayerTool, openfinanceGetByRecipientTool, openfinanceGetByKeywordTool, openfinanceGetSpendingSummaryTool } from '@/mcp/tools/openfinance'
 import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDatastoreTool, datagovmkListOrganizationsTool } from '@/mcp/tools/data-gov'
 import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
+import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
 
 export async function executeTool(toolName: string, argsStr: string) {
     try {
@@ -88,6 +89,31 @@ export async function executeTool(toolName: string, argsStr: string) {
             case makstatQueryTool.name: {
                 const validArgs = makstatQueryTool.meta.inputSchema.parse(args)
                 result = await makstatQueryTool.handler(validArgs)
+                break
+            }
+            case budgetGetSummaryTool.name: {
+                const validArgs = budgetGetSummaryTool.meta.inputSchema.parse(args)
+                result = await budgetGetSummaryTool.handler(validArgs)
+                break
+            }
+            case budgetGetIncomeBreakdownTool.name: {
+                const validArgs = budgetGetIncomeBreakdownTool.meta.inputSchema.parse(args)
+                result = await budgetGetIncomeBreakdownTool.handler(validArgs)
+                break
+            }
+            case budgetGetExpenditureBreakdownTool.name: {
+                const validArgs = budgetGetExpenditureBreakdownTool.meta.inputSchema.parse(args)
+                result = await budgetGetExpenditureBreakdownTool.handler(validArgs)
+                break
+            }
+            case budgetGetInstitutionsTool.name: {
+                const validArgs = budgetGetInstitutionsTool.meta.inputSchema.parse(args)
+                result = await budgetGetInstitutionsTool.handler(validArgs)
+                break
+            }
+            case budgetGetMacroTrendsTool.name: {
+                const validArgs = budgetGetMacroTrendsTool.meta.inputSchema.parse(args)
+                result = await budgetGetMacroTrendsTool.handler(validArgs)
                 break
             }
             default:
