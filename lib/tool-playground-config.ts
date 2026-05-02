@@ -157,6 +157,39 @@ export const TOOLS_CONFIG: ToolConfig[] = [
         ],
     },
     {
+        name: 'budget_get_summary',
+        title: 'Budget: Get Summary',
+        description: 'Top-level annual budget snapshot — total income, expenditure, deficit, and major income categories. Good first call for any budget year.',
+        fields: [{ name: 'year', type: 'number', label: 'Year', default: 2024, description: '2017–2025' }],
+    },
+    {
+        name: 'budget_get_income_breakdown',
+        title: 'Budget: Get Income Breakdown',
+        description: 'Detailed breakdown of tax income and social contributions by category, with amounts and percentages.',
+        fields: [{ name: 'year', type: 'number', label: 'Year', default: 2024, description: '2017–2025' }],
+    },
+    {
+        name: 'budget_get_expenditure_breakdown',
+        title: 'Budget: Get Expenditure Breakdown',
+        description: 'Expenditure breakdown by economic type (salaries, transfers, capital, etc.) or by functional sector (health, education, defense, etc.).',
+        fields: [
+            { name: 'year', type: 'number', label: 'Year', default: 2024, description: '2017–2025' },
+            { name: 'breakdown', type: 'enum', label: 'Breakdown', default: 'economic', options: ['economic', 'functional'] },
+        ],
+    },
+    {
+        name: 'budget_get_institutions',
+        title: 'Budget: Get Institutions',
+        description: 'Budget allocation and realization per government institution (ministries, agencies, commissions) with utilization percentage.',
+        fields: [{ name: 'year', type: 'number', label: 'Year', default: 2024, description: '2017–2025' }],
+    },
+    {
+        name: 'budget_get_macro_trends',
+        title: 'Budget: Get Macroeconomic Trends',
+        description: 'Full historical macroeconomic time series from 2008: GDP growth, deficit %, public debt, unemployment, inflation, total incomes and expenditures. No parameters needed.',
+        fields: [],
+    },
+    {
         name: 'makstat_query',
         title: 'MakStat: Query Data',
         description:
