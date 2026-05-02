@@ -1,5 +1,6 @@
 import { openfinanceSearchTransactionsTool, openfinanceGetByPayerTool, openfinanceGetByRecipientTool, openfinanceGetByKeywordTool, openfinanceGetSpendingSummaryTool } from '@/mcp/tools/openfinance'
 import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDatastoreTool, datagovmkListOrganizationsTool } from '@/mcp/tools/data-gov'
+import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
 export function configureMcpServer(server: McpServer) {
@@ -15,4 +16,9 @@ export function configureMcpServer(server: McpServer) {
     server.registerTool(datagovmkGetDatasetTool.name, datagovmkGetDatasetTool.meta, datagovmkGetDatasetTool.handler)
     server.registerTool(datagovmkQueryDatastoreTool.name, datagovmkQueryDatastoreTool.meta, datagovmkQueryDatastoreTool.handler)
     server.registerTool(datagovmkListOrganizationsTool.name, datagovmkListOrganizationsTool.meta, datagovmkListOrganizationsTool.handler)
+
+    // MakStat tools
+    server.registerTool(makstatBrowseTool.name, makstatBrowseTool.meta, makstatBrowseTool.handler)
+    server.registerTool(makstatGetMetadataTool.name, makstatGetMetadataTool.meta, makstatGetMetadataTool.handler)
+    server.registerTool(makstatQueryTool.name, makstatQueryTool.meta, makstatQueryTool.handler)
 }
