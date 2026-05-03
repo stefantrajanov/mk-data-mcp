@@ -5,6 +5,7 @@ import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDat
 import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
 import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
 import { uslugiBrowseTool, uslugiSearchServicesTool, uslugiGetServiceTool, uslugiListInstitutionsTool } from '@/mcp/tools/uslugi'
+import { nbstatBrowseTool, nbstatGetMetadataTool, nbstatQueryTool } from '@/mcp/tools/nbstat'
 
 export async function executeTool(toolName: string, argsStr: string) {
     try {
@@ -22,7 +23,7 @@ export async function executeTool(toolName: string, argsStr: string) {
             }
 
             // Fixup for playground: selections is submitted as a JSON string, parse it into an array
-            if (toolName === makstatQueryTool.name && typeof args === 'object' && args !== null) {
+            if ((toolName === makstatQueryTool.name || toolName === nbstatQueryTool.name) && typeof args === 'object' && args !== null) {
                 const a = args as Record<string, unknown>
                 if (typeof a.selections === 'string') {
                     a.selections = JSON.parse(a.selections)
@@ -135,6 +136,21 @@ export async function executeTool(toolName: string, argsStr: string) {
             case uslugiListInstitutionsTool.name: {
                 const validArgs = uslugiListInstitutionsTool.meta.inputSchema.parse(args)
                 result = await uslugiListInstitutionsTool.handler(validArgs)
+                break
+            }
+            case nbstatBrowseTool.name: {
+                const validArgs = nbstatBrowseTool.meta.inputSchema.parse(args)
+                result = await nbstatBrowseTool.handler(validArgs)
+                break
+            }
+            case nbstatGetMetadataTool.name: {
+                const validArgs = nbstatGetMetadataTool.meta.inputSchema.parse(args)
+                result = await nbstatGetMetadataTool.handler(validArgs)
+                break
+            }
+            case nbstatQueryTool.name: {
+                const validArgs = nbstatQueryTool.meta.inputSchema.parse(args)
+                result = await nbstatQueryTool.handler(validArgs)
                 break
             }
             default:
