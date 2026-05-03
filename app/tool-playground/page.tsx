@@ -79,7 +79,18 @@ export default function DemoPage() {
     // Helper: Result Parsing
     const getRenderedContent = () => {
         if (!result || !result.content || result.content.length === 0) return 'No content.'
-        return result.content[0].text
+        const text = result.content[0].text || ''
+
+        try {
+            const parsed = JSON.parse(text)
+            if (typeof parsed === 'object' && parsed !== null) {
+                return `\`\`\`json\n${JSON.stringify(parsed, null, 2)}\n\`\`\``
+            }
+        } catch (e) {
+            // Not pure JSON, return as-is
+        }
+
+        return text
     }
 
     return (
@@ -266,6 +277,11 @@ export default function DemoPage() {
                                                     h2: ({ node, ...props }) => <h2 className="mt-5 mb-3 text-lg font-bold" {...props} />,
                                                     ul: ({ node, ...props }) => <ul className="mb-4 list-inside list-disc space-y-1" {...props} />,
                                                     li: ({ node, ...props }) => <li className="text-foreground" {...props} />,
+                                                    pre: ({ node, ...props }) => (
+                                                        <div className="my-4 w-full overflow-x-auto rounded-xl border border-[#30363D] bg-[#0D1117] p-4 font-mono text-xs text-[#C9D1D9]">
+                                                            <pre {...props} />
+                                                        </div>
+                                                    ),
                                                     code: ({ node, className, children, ...props }) => {
                                                         const match = /language-(\w+)/.exec(className || '')
                                                         return !match ? (
