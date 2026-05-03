@@ -214,6 +214,41 @@ export const TOOLS_CONFIG: ToolConfig[] = [
         fields: [],
     },
     {
+        name: 'nbstat_browse',
+        title: 'NBStat: Browse Categories',
+        description: 'Navigate the National Bank statistical database hierarchy. Leave path empty for root, then drill down using returned `id` fields.',
+        fields: [
+            { name: 'path', type: 'string', label: 'Path', default: '', placeholder: 'e.g. Eksterni statistiki (leave empty for root)' },
+            { name: 'lang', type: 'enum', label: 'Language', default: 'en', options: ['en', 'mk'] },
+        ],
+    },
+    {
+        name: 'nbstat_get_metadata',
+        title: 'NBStat: Get Table Metadata',
+        description: 'Get variables and available values for a .px table. Required before querying — provides variable codes needed by nbstat_query.',
+        fields: [
+            { name: 'path', type: 'string', label: 'Table Path', required: true, placeholder: 'e.g. Eksterni statistiki/Platen Bilans/Platen bilans godisni/1_AgregiraniPodatociGodisniEN' },
+            { name: 'lang', type: 'enum', label: 'Language', default: 'en', options: ['en', 'mk'] },
+        ],
+    },
+    {
+        name: 'nbstat_query',
+        title: 'NBStat: Query Data',
+        description: 'Fetch National Bank statistical data with variable selections. Call nbstat_get_metadata first to get variable codes.',
+        fields: [
+            { name: 'path', type: 'string', label: 'Table Path', required: true, placeholder: 'e.g. Eksterni statistiki/Platen Bilans/Platen bilans godisni/1_AgregiraniPodatociGodisniEN' },
+            {
+                name: 'selections',
+                type: 'string',
+                label: 'Selections (JSON array)',
+                required: true,
+                placeholder: '[{"code":"Период","filter":"top","values":["5"]},{"code":"Компонента","filter":"all","values":["*"]}]',
+                description: 'JSON array of variable selections. Get codes from nbstat_get_metadata.',
+            },
+            { name: 'lang', type: 'enum', label: 'Language', default: 'en', options: ['en', 'mk'] },
+        ],
+    },
+    {
         name: 'makstat_query',
         title: 'MakStat: Query Data',
         description:

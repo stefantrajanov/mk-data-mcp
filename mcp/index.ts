@@ -3,6 +3,7 @@ import { datagovmkSearchDatasetsTool, datagovmkGetDatasetTool, datagovmkQueryDat
 import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/mcp/tools/makstat'
 import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
 import { uslugiBrowseTool, uslugiSearchServicesTool, uslugiGetServiceTool, uslugiListInstitutionsTool } from '@/mcp/tools/uslugi'
+import { nbstatBrowseTool, nbstatGetMetadataTool, nbstatQueryTool } from '@/mcp/tools/nbstat'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
 export function configureMcpServer(server: McpServer) {
@@ -36,4 +37,9 @@ export function configureMcpServer(server: McpServer) {
     server.registerTool(uslugiSearchServicesTool.name, uslugiSearchServicesTool.meta, uslugiSearchServicesTool.handler)
     server.registerTool(uslugiGetServiceTool.name, uslugiGetServiceTool.meta, uslugiGetServiceTool.handler)
     server.registerTool(uslugiListInstitutionsTool.name, uslugiListInstitutionsTool.meta, uslugiListInstitutionsTool.handler)
+
+    // NBStat (National Bank of North Macedonia) tools
+    server.registerTool(nbstatBrowseTool.name, nbstatBrowseTool.meta, nbstatBrowseTool.handler)
+    server.registerTool(nbstatGetMetadataTool.name, nbstatGetMetadataTool.meta, nbstatGetMetadataTool.handler)
+    server.registerTool(nbstatQueryTool.name, nbstatQueryTool.meta, nbstatQueryTool.handler)
 }
