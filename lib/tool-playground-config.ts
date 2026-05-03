@@ -272,4 +272,31 @@ export const TOOLS_CONFIG: ToolConfig[] = [
             { name: 'lang', type: 'enum', label: 'Language', default: 'en', options: ['en', 'mk'] },
         ],
     },
+    {
+        name: 'get_air_quality_stations',
+        title: 'Air Quality: Get Stations',
+        description: 'Retrieves the full list of monitoring stations, their geographical coordinates, and operational status.',
+        fields: [],
+    },
+    {
+        name: 'get_station_measurements',
+        title: 'Air Quality: Get Station Measurements',
+        description: 'Fetches the hourly measurement telemetry (PM10, PM2.5, NO2, O3, SO2, CO) for the current day for a specific monitoring station.',
+        fields: [{ name: 'station_id', type: 'number', label: 'Station ID', required: true, description: 'The numeric ID of the monitoring station.' }],
+    },
+    {
+        name: 'calculate_current_aqi',
+        title: 'Air Quality: Calculate Current AQI',
+        description: 'Calculates the European Air Quality Index (EAQI) for a station based on its most recent hourly readings.',
+        fields: [{ name: 'station_id', type: 'number', label: 'Station ID', required: true, description: 'The numeric ID of the monitoring station.' }],
+    },
+    {
+        name: 'find_nearest_station',
+        title: 'Air Quality: Find Nearest Station',
+        description: 'Finds the single closest active monitoring station to a specific geographic coordinate.',
+        fields: [
+            { name: 'latitude', type: 'number', label: 'Latitude', required: true, placeholder: '41.9954' },
+            { name: 'longitude', type: 'number', label: 'Longitude', required: true, placeholder: '21.4254' },
+        ],
+    },
 ]

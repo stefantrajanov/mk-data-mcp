@@ -4,6 +4,7 @@ import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/m
 import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
 import { uslugiBrowseTool, uslugiSearchServicesTool, uslugiGetServiceTool, uslugiListInstitutionsTool } from '@/mcp/tools/uslugi'
 import { nbstatBrowseTool, nbstatGetMetadataTool, nbstatQueryTool } from '@/mcp/tools/nbstat'
+import { getAirQualityStationsTool, getStationMeasurementsTool, calculateCurrentAqiTool, findNearestStationTool } from '@/mcp/tools/air-moepp'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
 export function configureMcpServer(server: McpServer) {
@@ -42,4 +43,10 @@ export function configureMcpServer(server: McpServer) {
     server.registerTool(nbstatBrowseTool.name, nbstatBrowseTool.meta, nbstatBrowseTool.handler)
     server.registerTool(nbstatGetMetadataTool.name, nbstatGetMetadataTool.meta, nbstatGetMetadataTool.handler)
     server.registerTool(nbstatQueryTool.name, nbstatQueryTool.meta, nbstatQueryTool.handler)
+
+    // Air Quality (MOEPP) tools
+    server.registerTool(getAirQualityStationsTool.name, getAirQualityStationsTool.meta, getAirQualityStationsTool.handler)
+    server.registerTool(getStationMeasurementsTool.name, getStationMeasurementsTool.meta, getStationMeasurementsTool.handler)
+    server.registerTool(calculateCurrentAqiTool.name, calculateCurrentAqiTool.meta, calculateCurrentAqiTool.handler)
+    server.registerTool(findNearestStationTool.name, findNearestStationTool.meta, findNearestStationTool.handler)
 }
