@@ -6,6 +6,7 @@ import { makstatBrowseTool, makstatGetMetadataTool, makstatQueryTool } from '@/m
 import { budgetGetSummaryTool, budgetGetIncomeBreakdownTool, budgetGetExpenditureBreakdownTool, budgetGetInstitutionsTool, budgetGetMacroTrendsTool } from '@/mcp/tools/budget'
 import { uslugiBrowseTool, uslugiSearchServicesTool, uslugiGetServiceTool, uslugiListInstitutionsTool } from '@/mcp/tools/uslugi'
 import { nbstatBrowseTool, nbstatGetMetadataTool, nbstatQueryTool } from '@/mcp/tools/nbstat'
+import { getAirQualityStationsTool, getStationMeasurementsTool, calculateCurrentAqiTool, findNearestStationTool } from '@/mcp/tools/air-moepp'
 
 export async function executeTool(toolName: string, argsStr: string) {
     try {
@@ -151,6 +152,26 @@ export async function executeTool(toolName: string, argsStr: string) {
             case nbstatQueryTool.name: {
                 const validArgs = nbstatQueryTool.meta.inputSchema.parse(args)
                 result = await nbstatQueryTool.handler(validArgs)
+                break
+            }
+            case getAirQualityStationsTool.name: {
+                const validArgs = getAirQualityStationsTool.meta.inputSchema.parse(args)
+                result = await getAirQualityStationsTool.handler()
+                break
+            }
+            case getStationMeasurementsTool.name: {
+                const validArgs = getStationMeasurementsTool.meta.inputSchema.parse(args)
+                result = await getStationMeasurementsTool.handler(validArgs)
+                break
+            }
+            case calculateCurrentAqiTool.name: {
+                const validArgs = calculateCurrentAqiTool.meta.inputSchema.parse(args)
+                result = await calculateCurrentAqiTool.handler(validArgs)
+                break
+            }
+            case findNearestStationTool.name: {
+                const validArgs = findNearestStationTool.meta.inputSchema.parse(args)
+                result = await findNearestStationTool.handler(validArgs)
                 break
             }
             default:
