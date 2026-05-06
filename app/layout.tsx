@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-    title: 'MCP Public Data Connector',
-    description: 'Query and retrieve structured datasets from data.gov.mk and MakStat using natural language through MCP.',
+    title: 'MK Data MCP — Macedonian Government Data for AI',
+    description: '28 MCP tools from 7 official sources. Connect your AI assistant to real-time public data from North Macedonia.',
+    openGraph: {
+        title: 'MK Data MCP — Macedonian Government Data for AI',
+        description: '28 MCP tools from 7 official sources of North Macedonia government open data.',
+        type: 'website',
+    },
 }
 
 export default function RootLayout({
