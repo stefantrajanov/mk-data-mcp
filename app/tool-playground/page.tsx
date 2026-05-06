@@ -94,7 +94,7 @@ export default function DemoPage() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col bg-[#F8FAFC]">
+        <div className="bg-background flex min-h-screen flex-col">
             <Navbar />
 
             <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 lg:flex-row lg:p-8">
@@ -104,10 +104,10 @@ export default function DemoPage() {
                   ======================================================= 
                 */}
                 <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-[380px]">
-                    <div className="border-border flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm">
-                        <div className="border-border border-b bg-slate-50/50 p-4">
+                    <div className="border-border bg-card flex flex-col overflow-hidden rounded-2xl border shadow-sm">
+                        <div className="border-border bg-surface border-b p-4">
                             <h2 className="flex items-center gap-2 text-sm font-semibold">
-                                <Terminal className="text-primary h-4 w-4" />
+                                <Terminal className="text-foreground h-4 w-4" />
                                 Tool Configuration
                             </h2>
                             <p className="text-muted-foreground mt-1 text-xs">Select and configure an MCP tool to execute.</p>
@@ -140,7 +140,7 @@ export default function DemoPage() {
                                             <span>
                                                 {field.label} {field.required && <span className="text-red-500">*</span>}
                                             </span>
-                                            <span className="text-muted-foreground rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px]">{field.name}</span>
+                                            <span className="text-muted-foreground bg-muted rounded px-1.5 py-0.5 font-mono text-[10px]">{field.name}</span>
                                         </label>
 
                                         {field.type === 'enum' ? (
@@ -173,7 +173,7 @@ export default function DemoPage() {
                             </div>
                         </div>
 
-                        <div className="border-border border-t bg-slate-50/50 p-4">
+                        <div className="border-border bg-surface border-t p-4">
                             <Button
                                 onClick={handleRun}
                                 disabled={loading}
@@ -202,10 +202,10 @@ export default function DemoPage() {
                 */}
                 <main className="flex w-full min-w-0 flex-1 flex-col gap-6">
                     {/* Tool Documentation Header */}
-                    <div className="border-border rounded-2xl border bg-white p-6 shadow-sm">
+                    <div className="border-border bg-card rounded-2xl border p-6 shadow-sm">
                         <div className="mb-3 flex items-center gap-3">
-                            <div className="bg-primary/10 rounded-lg p-2">
-                                <BookOpen className="text-primary h-5 w-5" />
+                            <div className="bg-muted rounded-lg p-2">
+                                <BookOpen className="text-foreground h-5 w-5" />
                             </div>
                             <h1 className="text-foreground text-xl font-bold">{activeTool.title}</h1>
                         </div>
@@ -215,10 +215,10 @@ export default function DemoPage() {
                     </div>
 
                     {/* Results Body */}
-                    <div className="border-border flex min-h-[400px] flex-1 flex-col rounded-2xl border bg-white shadow-sm">
+                    <div className="border-border bg-card flex min-h-[400px] flex-1 flex-col rounded-2xl border shadow-sm">
                         {!result && !error && !loading ? (
                             <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center p-8 text-center">
-                                <div className="ring-border mb-4 rounded-full bg-slate-50 p-4 ring-1">
+                                <div className="ring-border bg-muted mb-4 rounded-full p-4 ring-1">
                                     <Play className="text-muted-foreground h-8 w-8 opacity-50" />
                                 </div>
                                 <h3 className="text-foreground font-semibold">Awaiting Execution</h3>
@@ -226,21 +226,21 @@ export default function DemoPage() {
                             </div>
                         ) : loading ? (
                             <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center p-8 text-center">
-                                <RefreshCw className="text-primary mb-4 h-8 w-8 animate-spin" />
+                                <RefreshCw className="text-foreground mb-4 h-8 w-8 animate-spin" />
                                 <h3 className="text-foreground text-sm font-semibold">Processing Request...</h3>
                                 <p className="mt-1 text-xs">This may take a moment depending on the date range.</p>
                             </div>
                         ) : (
                             <Tabs defaultValue={error ? 'raw' : 'rendered'} className="relative flex w-full flex-1 flex-col">
-                                <div className="border-border rounded-t-2xl border-b bg-slate-50/50 p-2">
+                                <div className="border-border bg-surface rounded-t-2xl border-b p-2">
                                     <TabsList className="bg-background/50 border-border/50 border">
-                                        <TabsTrigger value="rendered" disabled={!!error} className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                        <TabsTrigger value="rendered" disabled={!!error} className="data-[state=active]:bg-card data-[state=active]:shadow-sm">
                                             Rendered Output
                                         </TabsTrigger>
-                                        <TabsTrigger value="raw" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                        <TabsTrigger value="raw" className="data-[state=active]:bg-card data-[state=active]:shadow-sm">
                                             Raw Response
                                         </TabsTrigger>
-                                        <TabsTrigger value="args" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                        <TabsTrigger value="args" className="data-[state=active]:bg-card data-[state=active]:shadow-sm">
                                             Payload Sent
                                         </TabsTrigger>
                                     </TabsList>
@@ -261,16 +261,16 @@ export default function DemoPage() {
                                                 remarkPlugins={[remarkGfm]}
                                                 components={{
                                                     table: ({ node, ...props }) => (
-                                                        <div className="border-border scrollbar-thin scrollbar-thumb-slate-300 my-6 w-full overflow-x-auto rounded-lg border bg-white shadow-sm">
+                                                        <div className="border-border scrollbar-thin scrollbar-thumb-muted bg-card my-6 w-full overflow-x-auto rounded-lg border shadow-sm">
                                                             <table className="w-full min-w-max border-collapse text-left text-sm whitespace-nowrap" {...props} />
                                                         </div>
                                                     ),
-                                                    thead: ({ node, ...props }) => <thead className="border-border border-b bg-slate-50" {...props} />,
+                                                    thead: ({ node, ...props }) => <thead className="border-border bg-surface border-b" {...props} />,
                                                     th: ({ node, ...props }) => <th className="text-muted-foreground p-3 font-semibold" {...props} />,
                                                     td: ({ node, ...props }) => <td className="border-border/50 text-foreground border-b p-3" {...props} />,
                                                     p: ({ node, ...props }) => <p className="text-foreground mb-4 leading-relaxed" {...props} />,
                                                     blockquote: ({ node, ...props }) => (
-                                                        <blockquote className="my-4 rounded-r-lg border-l-4 border-blue-500/50 bg-blue-50/50 p-3 text-xs text-blue-800 italic" {...props} />
+                                                        <blockquote className="border-border bg-muted/50 text-muted-foreground my-4 rounded-r-lg border-l-4 p-3 text-xs italic" {...props} />
                                                     ),
                                                     strong: ({ node, ...props }) => <strong className="text-foreground font-semibold" {...props} />,
                                                     h1: ({ node, ...props }) => <h1 className="mt-6 mb-4 text-xl font-bold" {...props} />,
@@ -285,7 +285,7 @@ export default function DemoPage() {
                                                     code: ({ node, className, children, ...props }) => {
                                                         const match = /language-(\w+)/.exec(className || '')
                                                         return !match ? (
-                                                            <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-pink-600" {...props}>
+                                                            <code className="bg-muted text-mk-red rounded px-1.5 py-0.5 font-mono text-xs" {...props}>
                                                                 {children}
                                                             </code>
                                                         ) : (

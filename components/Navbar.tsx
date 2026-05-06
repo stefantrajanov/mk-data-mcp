@@ -9,10 +9,10 @@ export default function Navbar() {
     const isDemo = pathname === '/demo'
 
     return (
-        <nav className="border-border sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md">
+        <nav className="border-border bg-background/85 sticky top-0 z-50 border-b backdrop-blur-md">
             <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
                 <Link href="/" className="text-foreground flex items-center gap-2 font-semibold">
-                    <Database className="text-primary h-5 w-5" />
+                    <Database className="text-foreground h-5 w-5" />
                     <span className="text-sm font-medium">MCP Public Data Connector</span>
                 </Link>
                 <div className="flex items-center gap-4">
@@ -26,7 +26,7 @@ export default function Navbar() {
                     ) : (
                         <Link
                             href="/"
-                            className="border-border text-foreground hover:bg-muted inline-flex h-9 items-center gap-1.5 rounded-full border bg-white px-5 text-sm font-medium transition-colors"
+                            className="border-border text-foreground hover:bg-muted bg-background inline-flex h-9 items-center gap-1.5 rounded-full border px-5 text-sm font-medium transition-colors"
                         >
                             ← Back
                         </Link>
