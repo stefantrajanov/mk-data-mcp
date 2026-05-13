@@ -1,137 +1,172 @@
 # 🇲🇰 mk-data-mcp
 
-### **Bridging the Gap Between AI Agents and Macedonian Public Data**
+### **Bridging the Gap Between AI Agents and North Macedonian Public Data**
 
-The **Macedonian Public Data MCP Server** is a standardized data wrapper for official Macedonian government institutional APIs. It allows AI models (like Claude, GPT, and Gemini) to move beyond their training data by providing **real-time, authoritative access** to public records through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/).
+The **North Macedonian Public Data MCP Server** is an authoritative, standardized Model Context Protocol (MCP) server that provides AI agents (Claude, GPT, Gemini, etc.) with real-time access to official North Macedonian government institutional APIs and public records.
 
----
-
-## 🎯 Vision & Mission
-
-The goal of this project is to provide a universal, standardized interface for public Macedonian data. By exposing these datasets as MCP Tools, any AI agent or client can easily query and consume them, empowering:
-
-- **Data Scientists:** To access clean, structured datasets for analysis and visualization.
-- **Journalists & Students:** To fact-check and analyze trends in Macedonia.
-- **Citizens:** To easily access public information without navigating complex government portals.
-- **Public Administration:** To support evidence-based decision-making.
+By exposing complex, diverse institutional datasets (CKAN, JSON-stat2, PXWeb, DataTables, raw telemetry) as unified, type-safe **MCP Tools**, this server empowers LLMs to query economic indicators, national statistics, public spending, open datasets, state budgets, administrative services, and air quality metrics using pure natural language.
 
 ---
 
-## 🚀 Core Functionalities
+## 🎯 Supported Public Platforms & Domains
 
-1.  **Natural Language Querying:** Users can ask questions like _"What was the unemployment rate in the last 10 years?"_ and the AI will use the correct tool to fetch the answer.
-2.  **Dataset Discovery:** Search and browse datasets from multiple official sources.
-3.  **Data Normalization:** Varied source formats (CSV, XLS, multi-dimensional JSON) are transformed into a unified, flat JSON schema.
-4.  **Source Attribution:** Responses always include original source URLs and metadata, ensuring transparency.
-5.  **Remote Transport:** Optimised for serverless environments with HTTP/SSE transport.
+The server seamlessly integrates with **7 major national systems**:
 
----
-
-## 📊 Primary Data Sources
-
-The server integrates with established government repositories:
-
-- **[MakStat (State Statistical Office)](https://makstat.stat.gov.mk/):** The authoritative source for population, demographics, and economic statistics.
-- **[data.gov.mk (National Open Data Portal)](https://data.gov.mk/):** A decentralized repository for government datasets across health, education, transport, and more.
-- **[Future Integrations]:** Planned support for Open Finance, legislative data from Sobraine (Assembly), and municipal portals.
-
----
-
-## 🏗️ System Architecture
-
-Built on the **Remote MCP Server** paradigm, the project leverages modern web technologies for scalability and performance.
-
-### **Technical Stack:**
-
-- **Framework:** Next.js 16 (App Router)
-- **Language:** TypeScript (Strict mode)
-- **SDK:** `@modelcontextprotocol/sdk`
-- **Transport:** HTTP / Server-Sent Events (SSE)
-- **Styling:** Tailwind CSS 4 & Shadcn/UI
-- **Deployment:** Optimized for Vercel (Serverless)
-
-### **Request Pipeline:**
-
-1.  **Tool Invocation:** Client triggers a tool (e.g., `get_makstat_demographics`).
-2.  **Upstream Request:** Server fetches live data from official government APIs.
-3.  **Normalization:** Raw data is processed into a standardized JSON format.
-4.  **Response:** Clean results are returned to the AI client.
+1. **[MakStat (State Statistical Office)](https://makstat.stat.gov.mk/)**  
+   Demographics, labor markets, macroeconomics, and census data powered by the PXWeb/JSON-stat2 engine.
+2. **[NBStat (National Bank of North Macedonia)](https://nbstat.nbrm.mk/)**  
+   Monetary aggregates, financial accounts, balance of payments, external debt, and interest rates.
+3. **[Open Finance (Ministry of Finance)](https://open.finance.gov.mk/)**  
+   Comprehensive real-time public treasury transactions, government spending, and vendor payments.
+4. **[Open Budget (Ministry of Finance)](https://budget.finance.gov.mk/)**  
+   Annual state budget summaries, income/expenditure breakdowns, institution utilization, and multi-year macroeconomic trends.
+5. **[data.gov.mk (National Open Data Portal)](https://data.gov.mk/)**  
+   CKAN-backed decentralized repository of open government datasets, packages, resources, and tabular datastores.
+6. **[uslugi.gov.mk (National E-Services Portal)](https://uslugi.gov.mk/)**  
+   Published administrative procedures, document requirements, institutional fees, statutory deadlines, and legal basis mappings.
+7. **[Air Quality Telemetry (MOEPP)](https://air.moepp.gov.mk/)**  
+   Live hourly ambient air quality sensor telemetry (PM10, PM2.5, NO2, O3, SO2, CO), station discovery, and client-side European Air Quality Index (EAQI) calculation.
 
 ---
 
-## 🛠️ Available Tools
+## 🛠️ Complete Suite of Available Tools
 
-| Tool Name         | Description                                               | Status         |
-| :---------------- | :-------------------------------------------------------- | :------------- |
-| `multiply`        | A utility tool used for testing (multiplies two numbers). | ✅ Stable      |
-| `get_mak_stat`    | (Planned) Fetch statistical tables from MakStat.          | 🚧 In Progress |
-| `search_data_gov` | (Planned) Search datasets on the Open Data Portal.        | 🚧 In Progress |
+Currently, the server exposes **27 highly optimized MCP tools** across all supported domains:
+
+### 📊 MakStat (State Statistical Office)
+
+| Tool Name              | Description                                                                                              | Status    |
+| :--------------------- | :------------------------------------------------------------------------------------------------------- | :-------- |
+| `makstat_browse`       | Navigate the category hierarchy to find queryable statistical tables (`.px` datasets).                   | ✅ Stable |
+| `makstat_get_metadata` | Retrieve the schema, variables, and Macedonian Cyrillic codes for a target table.                        | ✅ Stable |
+| `makstat_query`        | Query statistical data with specific variable selections and automatically flatten JSON-stat2 responses. | ✅ Stable |
+
+### 🏦 NBStat (National Bank)
+
+| Tool Name             | Description                                                                               | Status    |
+| :-------------------- | :---------------------------------------------------------------------------------------- | :-------- |
+| `nbstat_browse`       | Navigate external, financial, and monetary statistical databases and subcategories.       | ✅ Stable |
+| `nbstat_get_metadata` | Get schema definitions, dimensions, and available selection codes for financial datasets. | ✅ Stable |
+| `nbstat_query`        | Fetch structured financial time series data with dynamic dimension flattening.            | ✅ Stable |
+
+### 💰 Open Finance
+
+| Tool Name                                   | Description                                                                                     | Status    |
+| :------------------------------------------ | :---------------------------------------------------------------------------------------------- | :-------- |
+| `openfinance_search_transactions`           | Deep multi-field search across treasury transactions with pagination and date ranges.           | ✅ Stable |
+| `openfinance_get_transactions_by_payer`     | Retrieve all public transactions made by a specific government payer or tax ID (EDB).           | ✅ Stable |
+| `openfinance_get_transactions_by_recipient` | Fetch government payments received by a targeted individual, vendor, or contractor.             | ✅ Stable |
+| `openfinance_get_transactions_by_keyword`   | Thematic Cyrillic keyword queries mapped to targeted public sector spending.                    | ✅ Stable |
+| `openfinance_get_spending_summary`          | Compute client-side aggregated financial summaries and overall totals over transaction subsets. | ✅ Stable |
+
+### 📈 Open Budget
+
+| Tool Name                          | Description                                                                         | Status    |
+| :--------------------------------- | :---------------------------------------------------------------------------------- | :-------- |
+| `budget_get_summary`               | High-level macro review of annual income, expenditures, and net surplus/deficit.    | ✅ Stable |
+| `budget_get_income_breakdown`      | Granular composition of state tax revenue streams and social contributions.         | ✅ Stable |
+| `budget_get_expenditure_breakdown` | Categorical spending analyzed from economic or functional government sector angles. | ✅ Stable |
+| `budget_get_institutions`          | Comprehensive budget allocation vs. actual realization tracking per state entity.   | ✅ Stable |
+| `budget_get_macro_trends`          | Complete long-term macroeconomic indicator series spanning 2008 to present.         | ✅ Stable |
+
+### 📂 Open Data Portal (data.gov.mk)
+
+| Tool Name                      | Description                                                                 | Status    |
+| :----------------------------- | :-------------------------------------------------------------------------- | :-------- |
+| `datagovmk_search_datasets`    | Full-text query against published government metadata packages.             | ✅ Stable |
+| `datagovmk_get_dataset`        | Retrieve rich descriptive metadata and concrete file resource IDs.          | ✅ Stable |
+| `datagovmk_query_datastore`    | Extract structured SQL-like row segments directly from tabular files (CSV). | ✅ Stable |
+| `datagovmk_list_organizations` | Inspect all ministries, bodies, and commissions maintaining datasets.       | ✅ Stable |
+
+### 🏛️ E-Services Portal (uslugi.gov.mk)
+
+| Tool Name                  | Description                                                                               | Status    |
+| :------------------------- | :---------------------------------------------------------------------------------------- | :-------- |
+| `uslugi_browse`            | Traverse primary service categories and targeted procedural subcategories.                | ✅ Stable |
+| `uslugi_search_services`   | Fast keyword lookup for published citizen and enterprise administrative services.         | ✅ Stable |
+| `uslugi_get_service`       | Deep dive into procedural stages, fee tiers, contact endpoints, and gazetted legal bases. | ✅ Stable |
+| `uslugi_list_institutions` | Locate service providers geographically alongside full institutional contact directories. | ✅ Stable |
+
+### 🌍 Air Quality Monitoring (MOEPP)
+
+| Tool Name                  | Description                                                                                  | Status    |
+| :------------------------- | :------------------------------------------------------------------------------------------- | :-------- |
+| `get_air_quality_stations` | List physical telemetry stations, operational flags, and geographic anchors.                 | ✅ Stable |
+| `get_station_measurements` | Real-time ambient concentration readings across primary regulated pollutants.                | ✅ Stable |
+| `calculate_current_aqi`    | On-the-fly local evaluation of European Air Quality Index (EAQI) bands and dominant factors. | ✅ Stable |
+| `find_nearest_station`     | Geospatial resolution of the closest active sensor hub using Haversine formulas.             | ✅ Stable |
 
 ---
 
 ## 🚦 Getting Started
 
-### **Local Development**
+### **Prerequisites & Installation**
 
-1.  **Clone the repository:**
+Per project conventions, **`bun`** is the standard package manager and runtime standard.
+
+1. **Clone the repository:**
 
     ```bash
     git clone https://github.com/stefantrajanov/mk-data-mcp.git
     cd mk-data-mcp
     ```
 
-2.  **Install dependencies:**
+2. **Install dependencies:**
 
     ```bash
-    npm install
-    # or
     bun install
     ```
 
-3.  **Run the development server:**
+3. **Configure Environment Variables:**
+   Create a `.env` or `.env.local` file (optional, endpoints default to production paths if omitted):
 
-    ```bash
-    npm run dev
-    # or
-    bun dev
+    ```env
+    MAKSTAT_API_BASE_URL=https://makstat.stat.gov.mk/api/v1
+    NBSTAT_API_BASE_URL=https://nbstat.nbrm.mk/api/v1
+    OPEN_FINANCE_API_BASE_URL=https://open.finance.gov.mk/api/v1/datatables
+    BUDGET_API_BASE_URL=https://budget.finance.gov.mk/api/v1
+    DATA_GOV_API_BASE_URL=https://data.gov.mk/api/3/action
+    USLUGI_API_BASE_URL=https://uslugi.gov.mk
+    AIR_GOV_API_BASE_URL=https://air.moepp.gov.mk/api
     ```
 
-4.  **Access the MCP endpoint:**
-    The server listens on `http://localhost:3000/api/mcp`.
-
-### **Deployment**
-
-The project is designed to be deployed to **Vercel** with zero configuration. It uses the Next.js Edge Runtime for high-performance, stateless execution.
+4. **Launch Local Server:**
+    ```bash
+    bun dev
+    ```
+    The local transport handles MCP requests via SSE routing at `http://localhost:3000/api/mcp`.
 
 ---
 
-## 📡 Connecting to Your AI Client
+## 📡 Client Connection Configuration
 
-To use this server in your preferred MCP client (like Claude Desktop or Cursor), point the client to the SSE endpoint:
+Integrate the live server inside top-tier agent platforms using standard Remote SSE parameters:
+
+### **Claude Desktop / Cursor Settings**
 
 ```json
- "mcpServers": {
-    "mk-data-mcp": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mk-data-mcp.vercel.app/api/mcp/mcp"]
+{
+    "mcpServers": {
+        "mk-data-mcp": {
+            "command": "npx",
+            "args": ["-y", "mcp-remote", "https://mk-data-mcp.vercel.app/api/mcp"]
+        }
     }
-  },
+}
 ```
 
-For local testing, use: `http://localhost:3000/api/mcp/mcp`
+_(For testing locally, map the target URL to `http://localhost:3000/api/mcp`)_
 
 ---
 
-## ✨ Design Principles
+## 🏗️ Architectural Foundations
 
-The project's UI/UX (for future dashboards/visualizations) follows:
-
-- **Typography:** Inter (Modern sans-serif) for high readability.
-- **Aesthetics:** High-contrast slate text, subtle gradients, and reactive micro-animations.
-- **Interoperability:** Full compatibility with the official MCP SDK and modern AI interfaces.
+- **Transport Architecture:** Operates over lightweight serverless HTTP Server-Sent Events (SSE) interfaces natively decoupled from heavy local child-process executions.
+- **Normalization Pipeline:** Dynamically strips multi-dimensional structures (such as `json-stat2` block arrays) into predictable JSON rows perfectly conditioned for LLM context processing without breaking token ceilings.
+- **Type Safety & Validation:** Built using pure Next.js 16 (App Router), `@modelcontextprotocol/sdk`, and rigorous `Zod` validation layers ensuring schema adherence prior to making downstream public network calls.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for complete details.
